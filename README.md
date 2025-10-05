@@ -88,37 +88,6 @@ It features:
 
 ---
 
-## 📁 Folder Structure
-RouteMate/
-│
-├── backend/
-│ ├── server.js
-│ ├── config/
-│ │ └── db.js
-│ ├── controllers/
-│ ├── models/
-│ ├── routes/
-│ ├── middleware/
-│ ├── utils/
-│ └── .env
-│
-├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ ├── pages/
-│ │ ├── context/
-│ │ ├── services/
-│ │ └── App.js
-│ ├── package.json
-│ └── .env
-│
-├── docs/ # Architecture diagrams, screenshots, etc.
-├── .gitignore
-├── README.md
-└── package.json # For root-level npm scripts (optional)
-
----
-
 ## ⚙️ Setup Instructions
 
 ### 1️⃣ Clone the repo
