@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://routemate-q0su.onrender.com';
 
 // Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;

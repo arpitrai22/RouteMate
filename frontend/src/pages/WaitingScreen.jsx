@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import io from 'socket.io-client';
 import toast from 'react-hot-toast';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://routemate-q0su.onrender.com';
 
 const WaitingScreen = () => {
   const { user } = useAuth();

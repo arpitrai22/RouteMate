@@ -29,7 +29,7 @@ const Profile = () => {
     setLoading(true);
     try {
       const response = await axios.put(
-        'http://localhost:5000/api/users/profile',
+        'https://routemate-q0su.onrender.com/api/users/profile',
         profileData,
         { headers: { Authorization: `Bearer ${authService.getToken()}` } }
       );
@@ -51,7 +51,7 @@ const Profile = () => {
     setLoading(true);
     try {
       await axios.put(
-        'http://localhost:5000/api/users/change-password',
+        'https://routemate-q0su.onrender.com/api/users/change-password',
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,

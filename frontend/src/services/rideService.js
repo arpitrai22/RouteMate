@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = 'http://localhost:5000/api/rides';
+const API_URL = 'https://routemate-q0su.onrender.com/api/rides';
 
 // Get auth header with JWT token
 const getAuthHeader = () => ({

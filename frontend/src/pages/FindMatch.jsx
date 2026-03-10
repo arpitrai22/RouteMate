@@ -14,7 +14,7 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://routemate-q0su.onrender.com';
 const TIMER_DURATION = 60;
 
 // ── Fix leaflet icons ────────────────────────────────────
