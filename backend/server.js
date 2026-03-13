@@ -1,9 +1,9 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const http = require('http');
-const { Server } = require('socket.io');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const http = require("http");
+const { Server } = require("socket.io");
 
 dotenv.config();
 
@@ -12,23 +12,27 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: 'https://route-mate-murex.vercel.app',
-    methods: ['GET', 'POST']
-  }
+    origin: ["https://route-mate-murex.vercel.app", "http://localhost:5173"],
+    methods: ["GET", "POST"],
+  },
 });
 
-app.use(cors({ origin: 'https://route-mate-murex.vercel.app' }));
+app.use(
+  cors({
+    origin: ["https://route-mate-murex.vercel.app", "http://localhost:5173"],
+  }),
+);
 app.use(express.json());
 
 // Routes
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'RouteMate API is running!' });
+app.get("/", (req, res) => {
+  res.json({ message: "RouteMate API is running!" });
 });
 
 // ─────────────────────────────────────────
@@ -52,13 +56,14 @@ const matchSockets = new Map();
 // ─────────────────────────────────────────
 const getDistance = (lat1, lng1, lat2, lng2) => {
   const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -67,17 +72,17 @@ const getDistance = (lat1, lng1, lat2, lng2) => {
 // Generate unique match ID
 // ─────────────────────────────────────────
 const generateMatchId = (id1, id2) => {
-  return [id1, id2].sort().join('_') + '_' + Date.now();
+  return [id1, id2].sort().join("_") + "_" + Date.now();
 };
 
 // ─────────────────────────────────────────
 // Socket.io
 // ─────────────────────────────────────────
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
   // ── Find Match ─────────────────────────────────────────
-  socket.on('findMatch', (data) => {
+  socket.on("findMatch", (data) => {
     console.log(`${data.userName} is searching for a match...`);
 
     // Add to active searchers
@@ -91,18 +96,24 @@ io.on('connection', (socket) => {
       if (otherSearcher.userId === data.userId) continue;
 
       const sourceDistance = getDistance(
-        data.sourceLat, data.sourceLng,
-        otherSearcher.sourceLat, otherSearcher.sourceLng
+        data.sourceLat,
+        data.sourceLng,
+        otherSearcher.sourceLat,
+        otherSearcher.sourceLng,
       );
 
       const destDistance = getDistance(
-        data.destinationLat, data.destinationLng,
-        otherSearcher.destinationLat, otherSearcher.destinationLng
+        data.destinationLat,
+        data.destinationLng,
+        otherSearcher.destinationLat,
+        otherSearcher.destinationLng,
       );
 
       const radius = Math.min(data.radius, otherSearcher.radius);
 
-      console.log(`Source distance: ${sourceDistance.toFixed(2)}km, Dest distance: ${destDistance.toFixed(2)}km`);
+      console.log(
+        `Source distance: ${sourceDistance.toFixed(2)}km, Dest distance: ${destDistance.toFixed(2)}km`,
+      );
 
       if (sourceDistance <= radius && destDistance <= radius) {
         matchFound = true;
@@ -114,7 +125,7 @@ io.on('connection', (socket) => {
         activeSearchers.delete(otherSocketId);
 
         // Notify User A
-        socket.emit('matchFound', {
+        socket.emit("matchFound", {
           matchId,
           matchedUserName: otherSearcher.userName,
           matchedUserId: otherSearcher.userId,
@@ -125,7 +136,7 @@ io.on('connection', (socket) => {
         });
 
         // Notify User B
-        io.to(otherSocketId).emit('matchFound', {
+        io.to(otherSocketId).emit("matchFound", {
           matchId,
           matchedUserName: data.userName,
           matchedUserId: data.userId,
@@ -135,7 +146,9 @@ io.on('connection', (socket) => {
           destinationName: otherSearcher.destinationName,
         });
 
-        console.log(`Match found between ${data.userName} and ${otherSearcher.userName}`);
+        console.log(
+          `Match found between ${data.userName} and ${otherSearcher.userName}`,
+        );
         break;
       }
     }
@@ -146,8 +159,7 @@ io.on('connection', (socket) => {
   });
 
   // ── Accept Match ───────────────────────────────────────
-  socket.on('acceptMatch', ({ matchId, userId }) => {
-
+  socket.on("acceptMatch", ({ matchId, userId }) => {
     // Track socket IDs for this match
     if (!matchSockets.has(matchId)) {
       matchSockets.set(matchId, []);
@@ -176,7 +188,7 @@ io.on('connection', (socket) => {
 
       // Emit directly to each socket
       matchSocketIds.forEach((socketId) => {
-        io.to(socketId).emit('bothAccepted', { matchId });
+        io.to(socketId).emit("bothAccepted", { matchId });
       });
 
       console.log(`Both users accepted match ${matchId}`);
@@ -184,10 +196,10 @@ io.on('connection', (socket) => {
   });
 
   // ── Cancel Match ───────────────────────────────────────
-  socket.on('cancelMatch', ({ matchId, userId }) => {
+  socket.on("cancelMatch", ({ matchId, userId }) => {
     const matchSocketIds = matchSockets.get(matchId) || [];
     matchSocketIds.forEach((socketId) => {
-      io.to(socketId).emit('matchRejected');
+      io.to(socketId).emit("matchRejected");
     });
     matchAcceptances.delete(matchId);
     matchSockets.delete(matchId);
@@ -195,38 +207,39 @@ io.on('connection', (socket) => {
   });
 
   // ── Join Chat Room ─────────────────────────────────────
-  socket.on('joinRoom', ({ matchId, userId, userName }) => {
+  socket.on("joinRoom", ({ matchId, userId, userName }) => {
     socket.join(matchId);
-    socket.to(matchId).emit('userJoined', { userName });
+    socket.to(matchId).emit("userJoined", { userName });
     console.log(`${userName} joined room ${matchId}`);
   });
 
   // ── Send Message ───────────────────────────────────────
-  socket.on('sendMessage', (message) => {
-    socket.to(message.matchId).emit('receiveMessage', message);
+  socket.on("sendMessage", (message) => {
+    socket.to(message.matchId).emit("receiveMessage", message);
     console.log(`Message in room ${message.matchId}: ${message.text}`);
   });
 
   // ── Leave Room ─────────────────────────────────────────
-  socket.on('leaveRoom', ({ matchId, userId, userName }) => {
+  socket.on("leaveRoom", ({ matchId, userId, userName }) => {
     socket.leave(matchId);
-    socket.to(matchId).emit('userLeft', { userName });
+    socket.to(matchId).emit("userLeft", { userName });
     console.log(`${userName} left room ${matchId}`);
   });
 
   // ── Disconnect ─────────────────────────────────────────
-  socket.on('disconnect', () => {
+  socket.on("disconnect", () => {
     activeSearchers.delete(socket.id);
-    console.log('User disconnected:', socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
 
 // ─────────────────────────────────────────
 // MongoDB connection
 // ─────────────────────────────────────────
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch((err) => console.log('MongoDB connection error:', err));
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch((err) => console.log("MongoDB connection error:", err));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

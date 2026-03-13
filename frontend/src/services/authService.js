@@ -1,13 +1,13 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'https://routemate-q0su.onrender.com/api/auth';
+const API_URL = `${import.meta.env.VITE_API_URL}/auth`;
 
 // Register user
 const register = async (userData) => {
   const response = await axios.post(`${API_URL}/register`, userData);
   if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
   }
   return response.data;
 };
@@ -16,27 +16,27 @@ const register = async (userData) => {
 const login = async (userData) => {
   const response = await axios.post(`${API_URL}/login`, userData);
   if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
   }
   return response.data;
 };
 
 // Logout user
 const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
 };
 
 // Get current user from localStorage
 const getCurrentUser = () => {
-  const user = localStorage.getItem('user');
+  const user = localStorage.getItem("user");
   return user ? JSON.parse(user) : null;
 };
 
 // Get token
 const getToken = () => {
-  return localStorage.getItem('token');
+  return localStorage.getItem("token");
 };
 
 const authService = { register, login, logout, getCurrentUser, getToken };

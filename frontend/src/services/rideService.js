@@ -1,13 +1,13 @@
-import axios from 'axios';
-import authService from './authService';
+import axios from "axios";
+import authService from "./authService";
 
-const API_URL = 'https://routemate-q0su.onrender.com/api/rides';
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/rides`;
 
 // Get auth header with JWT token
 const getAuthHeader = () => ({
   headers: {
-    Authorization: `Bearer ${authService.getToken()}`
-  }
+    Authorization: `Bearer ${authService.getToken()}`,
+  },
 });
 
 // Post a new ride
@@ -30,7 +30,11 @@ const getActiveRides = async () => {
 
 // Cancel a ride
 const cancelRide = async (rideId) => {
-  const response = await axios.put(`${API_URL}/${rideId}/cancel`, {}, getAuthHeader());
+  const response = await axios.put(
+    `${API_URL}/${rideId}/cancel`,
+    {},
+    getAuthHeader(),
+  );
   return response.data;
 };
 

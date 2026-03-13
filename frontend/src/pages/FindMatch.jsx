@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
-import io from 'socket.io-client';
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
+import io from "socket.io-client";
 import {
   MapContainer,
   TileLayer,
@@ -10,38 +10,43 @@ import {
   Popup,
   useMap,
   useMapEvents,
-} from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-const SOCKET_URL = 'https://routemate-q0su.onrender.com';
+const SOCKET_URL =
+  import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 const TIMER_DURATION = 60;
 
 // ── Fix leaflet icons ────────────────────────────────────
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
 const greenIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
 const redIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
 const blueIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
@@ -65,10 +70,10 @@ const MapClickHandler = ({ selectingSource, onSourceSet, onDestSet }) => {
       const name = await reverseGeocode(lat, lng);
       if (selectingSource) {
         onSourceSet({ lat, lng, name });
-        toast.success('📍 Source set!');
+        toast.success("📍 Source set!");
       } else {
         onDestSet({ lat, lng, name });
-        toast.success('🏁 Destination set!');
+        toast.success("🏁 Destination set!");
       }
     },
   });
@@ -80,7 +85,7 @@ const reverseGeocode = async (lat, lng) => {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-      { headers: { 'Accept-Language': 'en' } }
+      { headers: { "Accept-Language": "en" } },
     );
     const data = await res.json();
     return data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
@@ -90,26 +95,38 @@ const reverseGeocode = async (lat, lng) => {
 };
 
 // ── Autocomplete Input ───────────────────────────────────
-const AutocompleteInput = ({ label, placeholder, value, onChange, onSelect, color }) => {
-  const [inputValue, setInputValue] = useState(value || '');
+const AutocompleteInput = ({
+  label,
+  placeholder,
+  value,
+  onChange,
+  onSelect,
+  color,
+}) => {
+  const [inputValue, setInputValue] = useState(value || "");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const timeoutRef = useRef(null);
   const isSelectingRef = useRef(false);
 
   const getSuggestions = async (query) => {
-    if (!query || query.length < 3) { setSuggestions([]); return; }
+    if (!query || query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`,
-        { headers: { 'Accept-Language': 'en' } }
+        { headers: { "Accept-Language": "en" } },
       );
       const data = await res.json();
-      setSuggestions(data.map((item) => ({
-        name: item.display_name,
-        lat: parseFloat(item.lat),
-        lng: parseFloat(item.lon),
-      })));
+      setSuggestions(
+        data.map((item) => ({
+          name: item.display_name,
+          lat: parseFloat(item.lat),
+          lng: parseFloat(item.lon),
+        })),
+      );
     } catch {
       setSuggestions([]);
     }
@@ -130,7 +147,9 @@ const AutocompleteInput = ({ label, placeholder, value, onChange, onSelect, colo
     setSuggestions([]);
     setShowSuggestions(false);
     onSelect(item);
-    setTimeout(() => { isSelectingRef.current = false; }, 300);
+    setTimeout(() => {
+      isSelectingRef.current = false;
+    }, 300);
   };
 
   const handleBlur = () => {
@@ -145,7 +164,9 @@ const AutocompleteInput = ({ label, placeholder, value, onChange, onSelect, colo
 
   return (
     <div className="relative">
-      <label className="block text-sm font-bold text-[#1F2937] mb-1">{label}</label>
+      <label className="block text-sm font-bold text-[#1F2937] mb-1">
+        {label}
+      </label>
       <input
         type="text"
         value={inputValue}
@@ -154,9 +175,9 @@ const AutocompleteInput = ({ label, placeholder, value, onChange, onSelect, colo
         onBlur={handleBlur}
         placeholder={placeholder}
         className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none font-medium text-[#1F2937] transition-colors ${
-          color === 'green'
-            ? 'border-gray-200 focus:border-[#58CC02]'
-            : 'border-gray-200 focus:border-[#FF4B4B]'
+          color === "green"
+            ? "border-gray-200 focus:border-[#58CC02]"
+            : "border-gray-200 focus:border-[#FF4B4B]"
         }`}
       />
       {showSuggestions && suggestions.length > 0 && (
@@ -164,12 +185,15 @@ const AutocompleteInput = ({ label, placeholder, value, onChange, onSelect, colo
           {suggestions.map((item, index) => (
             <div
               key={index}
-              onMouseDown={(e) => { e.preventDefault(); handleSelect(item); }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleSelect(item);
+              }}
               className="w-full text-left px-4 py-3 hover:bg-[#F0FFF0] cursor-pointer transition-colors border-b border-gray-100 last:border-0"
             >
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 flex-shrink-0">
-                  {color === 'green' ? '📍' : '🏁'}
+                  {color === "green" ? "📍" : "🏁"}
                 </span>
                 <span className="text-sm font-medium text-[#1F2937] leading-snug">
                   {item.name}
@@ -191,7 +215,7 @@ const FindMatch = () => {
   const navigate = useNavigate();
   const socketRef = useRef(null);
 
-  const [step, setStep] = useState('form');
+  const [step, setStep] = useState("form");
   const [timer, setTimer] = useState(TIMER_DURATION);
   const [radius, setRadius] = useState(1);
   const [matchData, setMatchData] = useState(null);
@@ -201,8 +225,8 @@ const FindMatch = () => {
 
   const [source, setSource] = useState(null);
   const [destination, setDestination] = useState(null);
-  const [sourceInput, setSourceInput] = useState('');
-  const [destInput, setDestInput] = useState('');
+  const [sourceInput, setSourceInput] = useState("");
+  const [destInput, setDestInput] = useState("");
 
   // ── Get user location ────────────────────────────────────
   useEffect(() => {
@@ -213,7 +237,7 @@ const FindMatch = () => {
           setUserLocation(loc);
           setFlyTo([loc.lat, loc.lng]);
         },
-        () => console.log('Location access denied')
+        () => console.log("Location access denied"),
       );
     }
   }, []);
@@ -221,18 +245,23 @@ const FindMatch = () => {
   // ── Socket setup ─────────────────────────────────────────
   useEffect(() => {
     socketRef.current = io(SOCKET_URL);
-    socketRef.current.on('matchFound', (data) => {
+    socketRef.current.on("matchFound", (data) => {
       setMatchData(data);
-      setStep('matched');
-      toast.success('RouteMate found! 🎉');
+      setStep("matched");
+      toast.success("RouteMate found! 🎉");
     });
-    return () => { if (socketRef.current) socketRef.current.disconnect(); };
+    return () => {
+      if (socketRef.current) socketRef.current.disconnect();
+    };
   }, []);
 
   // ── Timer ────────────────────────────────────────────────
   useEffect(() => {
-    if (step !== 'searching') return;
-    if (timer === 0) { setStep('notfound'); return; }
+    if (step !== "searching") return;
+    if (timer === 0) {
+      setStep("notfound");
+      return;
+    }
     const interval = setInterval(() => setTimer((p) => p - 1), 1000);
     return () => clearInterval(interval);
   }, [step, timer]);
@@ -251,21 +280,27 @@ const FindMatch = () => {
 
   const useMyLocation = async () => {
     if (!userLocation) {
-      toast.error('Location access denied. Please enable location.');
+      toast.error("Location access denied. Please enable location.");
       return;
     }
     const name = await reverseGeocode(userLocation.lat, userLocation.lng);
     handleSourceSet({ ...userLocation, name });
-    toast.success('📍 Using your current location!');
+    toast.success("📍 Using your current location!");
   };
 
   const handleFindMatch = async (e) => {
     e.preventDefault();
-    if (!source) { toast.error('Please set your source location'); return; }
-    if (!destination) { toast.error('Please set your destination location'); return; }
-    setStep('searching');
+    if (!source) {
+      toast.error("Please set your source location");
+      return;
+    }
+    if (!destination) {
+      toast.error("Please set your destination location");
+      return;
+    }
+    setStep("searching");
     setTimer(TIMER_DURATION);
-    socketRef.current.emit('findMatch', {
+    socketRef.current.emit("findMatch", {
       userId: user.id,
       userName: user.name,
       sourceLat: source.lat,
@@ -279,7 +314,7 @@ const FindMatch = () => {
   };
 
   const handleConnect = () => {
-    navigate('/waiting', {
+    navigate("/waiting", {
       state: {
         matchData: {
           ...matchData,
@@ -289,13 +324,13 @@ const FindMatch = () => {
           destinationLat: destination.lat,
           destinationLng: destination.lng,
           destinationName: destination.name,
-        }
-      }
+        },
+      },
     });
   };
 
   const handleRetry = () => {
-    setStep('form');
+    setStep("form");
     setTimer(TIMER_DURATION);
     setRadius(1);
   };
@@ -303,10 +338,10 @@ const FindMatch = () => {
   const handleExpandRadius = () => {
     const expanded = 3;
     setRadius(expanded);
-    setStep('searching');
+    setStep("searching");
     setTimer(TIMER_DURATION);
-    toast('Expanding search radius to 3km...', { icon: '🔍' });
-    socketRef.current.emit('findMatch', {
+    toast("Expanding search radius to 3km...", { icon: "🔍" });
+    socketRef.current.emit("findMatch", {
       userId: user.id,
       userName: user.name,
       sourceLat: source.lat,
@@ -320,17 +355,21 @@ const FindMatch = () => {
   };
 
   // ── FORM STEP ────────────────────────────────────────────
-  if (step === 'form') {
+  if (step === "form") {
     return (
       <div className="min-h-screen bg-[#F7F7F7] flex flex-col">
-
         {/* Navbar */}
         <nav className="bg-white border-b-2 border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-3xl">🚗</span>
-            <span className="text-xl font-extrabold text-[#1F2937]">RouteMate</span>
+            <span className="text-xl font-extrabold text-[#1F2937]">
+              RouteMate
+            </span>
           </div>
-          <button onClick={() => navigate('/home')} className="text-[#1CB0F6] font-bold hover:underline">
+          <button
+            onClick={() => navigate("/home")}
+            className="text-[#1CB0F6] font-bold hover:underline"
+          >
             ← Back
           </button>
         </nav>
@@ -340,11 +379,11 @@ const FindMatch = () => {
           <MapContainer
             center={[25.3176, 82.9739]}
             zoom={14}
-            style={{ height: '320px', width: '100%' }}
+            style={{ height: "320px", width: "100%" }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='© OpenStreetMap'
+              attribution="© OpenStreetMap"
             />
             <FlyToLocation position={flyTo} />
             <MapClickHandler
@@ -353,18 +392,24 @@ const FindMatch = () => {
               onDestSet={handleDestSet}
             />
             {userLocation && (
-              <Marker position={[userLocation.lat, userLocation.lng]} icon={blueIcon}>
+              <Marker
+                position={[userLocation.lat, userLocation.lng]}
+                icon={blueIcon}
+              >
                 <Popup>📌 You are here</Popup>
               </Marker>
             )}
             {source && (
               <Marker position={[source.lat, source.lng]} icon={greenIcon}>
-                <Popup>📍 {source.name?.split(',')[0]}</Popup>
+                <Popup>📍 {source.name?.split(",")[0]}</Popup>
               </Marker>
             )}
             {destination && (
-              <Marker position={[destination.lat, destination.lng]} icon={redIcon}>
-                <Popup>🏁 {destination.name?.split(',')[0]}</Popup>
+              <Marker
+                position={[destination.lat, destination.lng]}
+                icon={redIcon}
+              >
+                <Popup>🏁 {destination.name?.split(",")[0]}</Popup>
               </Marker>
             )}
           </MapContainer>
@@ -375,8 +420,8 @@ const FindMatch = () => {
               onClick={() => setSelectingSource(true)}
               className={`px-4 py-2 rounded-xl font-extrabold text-sm border-b-4 transition-all shadow-lg ${
                 selectingSource
-                  ? 'bg-[#58CC02] text-white border-[#46A302]'
-                  : 'bg-white text-gray-400 border-gray-200'
+                  ? "bg-[#58CC02] text-white border-[#46A302]"
+                  : "bg-white text-gray-400 border-gray-200"
               }`}
             >
               📍 Set Source
@@ -385,8 +430,8 @@ const FindMatch = () => {
               onClick={() => setSelectingSource(false)}
               className={`px-4 py-2 rounded-xl font-extrabold text-sm border-b-4 transition-all shadow-lg ${
                 !selectingSource
-                  ? 'bg-[#FF4B4B] text-white border-red-700'
-                  : 'bg-white text-gray-400 border-gray-200'
+                  ? "bg-[#FF4B4B] text-white border-red-700"
+                  : "bg-white text-gray-400 border-gray-200"
               }`}
             >
               🏁 Set Dest
@@ -398,7 +443,6 @@ const FindMatch = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-md mx-auto px-4 py-4">
             <form onSubmit={handleFindMatch} className="space-y-4">
-
               {/* Source */}
               <AutocompleteInput
                 label="📍 Source"
@@ -434,13 +478,15 @@ const FindMatch = () => {
                   <div className="flex items-center gap-2">
                     <span>📍</span>
                     <span className="text-sm font-bold text-[#58CC02] truncate">
-                      {source ? source.name?.split(',')[0] : 'Not set'}
+                      {source ? source.name?.split(",")[0] : "Not set"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span>🏁</span>
                     <span className="text-sm font-bold text-[#FF4B4B] truncate">
-                      {destination ? destination.name?.split(',')[0] : 'Not set'}
+                      {destination
+                        ? destination.name?.split(",")[0]
+                        : "Not set"}
                     </span>
                   </div>
                 </div>
@@ -462,8 +508,8 @@ const FindMatch = () => {
                       onClick={() => setRadius(r)}
                       className={`py-2 rounded-xl font-extrabold text-sm border-b-4 transition-all ${
                         radius === r
-                          ? 'bg-[#58CC02] text-white border-[#46A302]'
-                          : 'bg-white text-gray-400 border-gray-200 hover:border-[#58CC02] hover:text-[#58CC02]'
+                          ? "bg-[#58CC02] text-white border-[#46A302]"
+                          : "bg-white text-gray-400 border-gray-200 hover:border-[#58CC02] hover:text-[#58CC02]"
                       }`}
                     >
                       {r} km
@@ -482,7 +528,6 @@ const FindMatch = () => {
               >
                 🔍 FIND A ROUTEMATE
               </button>
-
             </form>
           </div>
         </div>
@@ -491,7 +536,7 @@ const FindMatch = () => {
   }
 
   // ── SEARCHING ────────────────────────────────────────────
-  if (step === 'searching') {
+  if (step === "searching") {
     const percentage = (timer / TIMER_DURATION) * 100;
     const circumference = 2 * Math.PI * 54;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -501,20 +546,31 @@ const FindMatch = () => {
         <div className="max-w-md w-full text-center">
           <div className="relative inline-flex items-center justify-center mb-8">
             <svg width="140" height="140" className="-rotate-90">
-              <circle cx="70" cy="70" r="54" fill="none" stroke="#E5E7EB" strokeWidth="10" />
               <circle
-                cx="70" cy="70" r="54"
+                cx="70"
+                cy="70"
+                r="54"
                 fill="none"
-                stroke={timer > 15 ? '#58CC02' : '#FF4B4B'}
+                stroke="#E5E7EB"
+                strokeWidth="10"
+              />
+              <circle
+                cx="70"
+                cy="70"
+                r="54"
+                fill="none"
+                stroke={timer > 15 ? "#58CC02" : "#FF4B4B"}
                 strokeWidth="10"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                style={{ transition: 'stroke-dashoffset 1s linear' }}
+                style={{ transition: "stroke-dashoffset 1s linear" }}
               />
             </svg>
             <div className="absolute text-center">
-              <div className={`text-4xl font-extrabold ${timer > 15 ? 'text-[#58CC02]' : 'text-[#FF4B4B]'}`}>
+              <div
+                className={`text-4xl font-extrabold ${timer > 15 ? "text-[#58CC02]" : "text-[#FF4B4B]"}`}
+              >
                 {timer}
               </div>
               <div className="text-xs font-bold text-gray-400">SEC</div>
@@ -535,7 +591,7 @@ const FindMatch = () => {
               <div>
                 <div className="text-xs font-bold text-gray-400">FROM</div>
                 <div className="font-bold text-[#1F2937] text-sm">
-                  {source?.name?.split(',')[0]}
+                  {source?.name?.split(",")[0]}
                 </div>
               </div>
             </div>
@@ -544,13 +600,16 @@ const FindMatch = () => {
               <div>
                 <div className="text-xs font-bold text-gray-400">TO</div>
                 <div className="font-bold text-[#1F2937] text-sm">
-                  {destination?.name?.split(',')[0]}
+                  {destination?.name?.split(",")[0]}
                 </div>
               </div>
             </div>
           </div>
 
-          <button onClick={handleRetry} className="text-gray-400 font-bold hover:text-gray-600 transition-colors">
+          <button
+            onClick={handleRetry}
+            className="text-gray-400 font-bold hover:text-gray-600 transition-colors"
+          >
             Cancel Search
           </button>
         </div>
@@ -559,13 +618,17 @@ const FindMatch = () => {
   }
 
   // ── MATCHED ──────────────────────────────────────────────
-  if (step === 'matched') {
+  if (step === "matched") {
     return (
       <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <div className="text-7xl mb-4 animate-bounce">🎉</div>
-          <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">RouteMate Found!</h1>
-          <p className="text-gray-500 font-medium mb-6">Someone is going your way!</p>
+          <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">
+            RouteMate Found!
+          </h1>
+          <p className="text-gray-500 font-medium mb-6">
+            Someone is going your way!
+          </p>
 
           <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-[#58CC02] mb-6">
             <div className="text-5xl mb-3">👤</div>
@@ -579,18 +642,22 @@ const FindMatch = () => {
               <div className="flex items-start gap-2">
                 <span>📍</span>
                 <div>
-                  <div className="text-xs font-bold text-gray-400">THEIR SOURCE</div>
+                  <div className="text-xs font-bold text-gray-400">
+                    THEIR SOURCE
+                  </div>
                   <div className="text-sm font-bold text-[#1F2937]">
-                    {matchData?.matchedSourceName?.split(',')[0]}
+                    {matchData?.matchedSourceName?.split(",")[0]}
                   </div>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <span>🏁</span>
                 <div>
-                  <div className="text-xs font-bold text-gray-400">THEIR DESTINATION</div>
+                  <div className="text-xs font-bold text-gray-400">
+                    THEIR DESTINATION
+                  </div>
                   <div className="text-sm font-bold text-[#1F2937]">
-                    {matchData?.matchedDestinationName?.split(',')[0]}
+                    {matchData?.matchedDestinationName?.split(",")[0]}
                   </div>
                 </div>
               </div>
@@ -615,12 +682,14 @@ const FindMatch = () => {
   }
 
   // ── NOT FOUND ────────────────────────────────────────────
-  if (step === 'notfound') {
+  if (step === "notfound") {
     return (
       <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <div className="text-7xl mb-4">😔</div>
-          <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">No match found</h1>
+          <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">
+            No match found
+          </h1>
           <p className="text-gray-500 font-medium mb-8">
             No one was found going your way this time
           </p>
@@ -637,7 +706,7 @@ const FindMatch = () => {
             📡 EXPAND SEARCH TO 3KM
           </button>
           <button
-            onClick={() => navigate('/home')}
+            onClick={() => navigate("/home")}
             className="text-gray-400 font-bold hover:text-gray-600 transition-colors"
           >
             Back to Home

@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Logo from '../components/Logo';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Logo from "../components/Logo";
+import toast from "react-hot-toast";
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -19,10 +19,10 @@ const Login = () => {
     setLoading(true);
     try {
       await login(formData);
-      toast.success('Welcome back! 🚗');
-      navigate('/home');
+      toast.success("Welcome back! 🚗");
+      navigate("/home");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -30,7 +30,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] flex flex-col">
-
       {/* Top green banner */}
       <div className="bg-[#58CC02] px-6 pt-12 pb-16 flex flex-col items-center">
         <Logo size="xl" />
@@ -42,14 +41,12 @@ const Login = () => {
       {/* Card */}
       <div className="flex-1 -mt-6 bg-[#F7F7F7] rounded-t-3xl px-6 pt-8">
         <div className="max-w-md mx-auto">
-
           <h2 className="text-2xl font-extrabold text-[#1F2937] mb-6 text-center">
             Welcome Back! 👋
           </h2>
 
           <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-4">
-
               <div>
                 <label className="block text-sm font-extrabold text-[#1F2937] mb-1">
                   EMAIL
@@ -85,9 +82,8 @@ const Login = () => {
                 disabled={loading}
                 className="w-full bg-[#58CC02] text-white font-extrabold py-4 rounded-xl border-b-4 border-[#46A302] hover:bg-[#46A302] active:border-b-0 active:translate-y-1 transition-all text-lg disabled:opacity-70 mt-2"
               >
-                {loading ? '...' : 'LOG IN'}
+                {loading ? "..." : "LOG IN"}
               </button>
-
             </form>
           </div>
 
@@ -104,7 +100,6 @@ const Login = () => {
               CREATE AN ACCOUNT
             </button>
           </Link>
-
         </div>
       </div>
     </div>

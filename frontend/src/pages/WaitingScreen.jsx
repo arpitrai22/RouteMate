@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import io from 'socket.io-client';
-import toast from 'react-hot-toast';
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import io from "socket.io-client";
+import toast from "react-hot-toast";
 
-const SOCKET_URL = 'https://routemate-q0su.onrender.com';
+const SOCKET_URL =
+  import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const WaitingScreen = () => {
   const { user } = useAuth();
@@ -16,30 +17,30 @@ const WaitingScreen = () => {
 
   useEffect(() => {
     if (!matchData) {
-      navigate('/home');
+      navigate("/home");
       return;
     }
 
     const socket = io(SOCKET_URL);
     socketRef.current = socket;
 
-    socket.on('connect', () => {
-      console.log('WaitingScreen connected:', socket.id);
-      socket.emit('acceptMatch', {
+    socket.on("connect", () => {
+      console.log("WaitingScreen connected:", socket.id);
+      socket.emit("acceptMatch", {
         matchId: matchData.matchId,
         userId: user.id,
       });
     });
 
-    socket.on('bothAccepted', (data) => {
-      console.log('Both accepted!', data);
-      toast.success('Connected! Opening chat... 💬');
-      navigate('/chat', { state: { matchData } });
+    socket.on("bothAccepted", (data) => {
+      console.log("Both accepted!", data);
+      toast.success("Connected! Opening chat... 💬");
+      navigate("/chat", { state: { matchData } });
     });
 
-    socket.on('matchRejected', () => {
-      toast.error('The other user declined the match');
-      navigate('/home');
+    socket.on("matchRejected", () => {
+      toast.error("The other user declined the match");
+      navigate("/home");
     });
 
     const interval = setInterval(() => {
@@ -54,19 +55,18 @@ const WaitingScreen = () => {
 
   const handleCancel = () => {
     if (socketRef.current) {
-      socketRef.current.emit('cancelMatch', {
+      socketRef.current.emit("cancelMatch", {
         matchId: matchData?.matchId,
         userId: user.id,
       });
       socketRef.current.disconnect();
     }
-    navigate('/home');
+    navigate("/home");
   };
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
-
         <div className="text-7xl mb-6 animate-pulse">⏳</div>
 
         <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">
@@ -82,8 +82,12 @@ const WaitingScreen = () => {
               <div className="w-16 h-16 bg-[#58CC02] rounded-2xl flex items-center justify-center text-white text-2xl font-extrabold mx-auto mb-2">
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
-              <div className="text-sm font-bold text-[#1F2937]">{user?.name}</div>
-              <div className="text-xs text-[#58CC02] font-bold mt-1">✅ Ready</div>
+              <div className="text-sm font-bold text-[#1F2937]">
+                {user?.name}
+              </div>
+              <div className="text-xs text-[#58CC02] font-bold mt-1">
+                ✅ Ready
+              </div>
             </div>
 
             <div className="text-3xl animate-pulse">🤝</div>
@@ -95,7 +99,9 @@ const WaitingScreen = () => {
               <div className="text-sm font-bold text-[#1F2937]">
                 {matchData?.matchedUserName}
               </div>
-              <div className="text-xs text-[#FFC800] font-bold mt-1">⏳ Waiting</div>
+              <div className="text-xs text-[#FFC800] font-bold mt-1">
+                ⏳ Waiting
+              </div>
             </div>
           </div>
 
@@ -112,7 +118,6 @@ const WaitingScreen = () => {
         >
           Cancel
         </button>
-
       </div>
     </div>
   );
