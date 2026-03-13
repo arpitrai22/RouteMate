@@ -12,14 +12,22 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://route-mate-murex.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://route-mate-murex.vercel.app",
+      "https://route-mate-3ezd.vercel.app",
+      "http://localhost:5173",
+    ],
     methods: ["GET", "POST"],
   },
 });
 
 app.use(
   cors({
-    origin: ["https://route-mate-murex.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://route-mate-murex.vercel.app",
+      "https://route-mate-3ezd.vercel.app",
+      "http://localhost:5173",
+    ],
   }),
 );
 app.use(express.json());
